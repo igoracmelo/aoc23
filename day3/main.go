@@ -1,13 +1,18 @@
 package main
 
 import (
+	_ "embed"
+	"fmt"
 	"strconv"
 	"strings"
 	"unicode"
 )
 
-func main() {
+//go:embed "input"
+var input string
 
+func main() {
+	fmt.Println(compute(input))
 }
 
 func compute(in string) int {
@@ -28,43 +33,60 @@ func compute(in string) int {
 	return sum
 }
 
+// sumAdjascentTo sum the numbers adjascent to current position.
+// current position must be a symbol and != "."
 func sumAdjascentTo(m []string, i, j int) int {
-	sum := 0
+
+	// delta i's and delta j's
+	dis := []int{+0, +0, -1, +1, +1, -1, +1, -1}
+	djs := []int{-1, +1, +0, +0, +1, +1, -1, -1}
 
 	bakI, bakJ := i, j
-	_ = bakI
+	sum := 0
 
-	djs := []int{-1, 1}
-	dis := []int{0, 0}
+	for k := range dis {
+		i = bakI + dis[k]
+		j = bakJ + djs[k]
 
-	for k := range djs {
-		di := dis[k]
-		dj := djs[k]
-
-		found := false
-		for i, j = i+di, j+dj; i >= 0 && j >= 0 && i < len(m) && j < len(m[i]) && unicode.IsDigit(rune(m[i][j])); j += dj {
-			found = true
+		if i < 0 || i >= len(m) {
+			continue
 		}
-		if !found {
-			j = bakJ
+		if j < 0 || j >= len(m[i]) {
 			continue
 		}
 
-		var sNum string
-		if j > bakJ {
-			sNum = m[i][bakJ+1 : j]
-		} else {
-			sNum = m[i][j+1 : bakJ]
+		// if the caracter is a digit, it finds all digits and parses and sums it
+		if unicode.IsDigit(rune(m[i][j])) {
+			sum += parseNumberInPosition(m, i, j)
 		}
-
-		j = bakJ
-
-		num, err := strconv.Atoi(sNum)
-		if err != nil {
-			panic(err)
-		}
-
-		sum += num
 	}
+
 	return sum
+}
+
+// parseNumberInPosition finds and parses the number and replace it with "..." to avoid the problem of double counting
+func parseNumberInPosition(m []string, i, j int) int {
+	bakJ := j
+	ini := j
+	end := j
+
+	l := m[i]
+	for ; j >= 0 && unicode.IsDigit(rune(l[j])); j-- {
+		ini = j
+	}
+
+	j = bakJ
+
+	for ; j < len(l) && unicode.IsDigit(rune(l[j])); j++ {
+		end = j
+	}
+
+	sNum := l[ini : end+1]
+	num, err := strconv.Atoi(sNum)
+	if err != nil {
+		panic(err)
+	}
+
+	m[i] = l[:ini] + strings.Repeat(".", len(sNum)) + l[end+1:]
+	return num
 }
