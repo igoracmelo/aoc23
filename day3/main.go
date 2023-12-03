@@ -31,12 +31,27 @@ func compute(in string) int {
 func sumAdjascentTo(m []string, i, j int) int {
 	sum := 0
 
-	dj := -1
-	for ; j+dj >= 0 && unicode.IsDigit(rune(m[i][j+dj])); dj-- {
-	}
+	bakI, bakJ := i, j
+	_ = bakI
 
-	if dj != -1 {
-		sNum := m[i][j+dj+1 : j]
+	djs := []int{-1, 1}
+	for _, dj := range djs {
+		for j = j + dj; j >= 0 && j < len(m[i]) && unicode.IsDigit(rune(m[i][j])); j += dj {
+		}
+		if j == bakJ+dj {
+			j = bakJ
+			continue
+		}
+
+		var sNum string
+		if j > bakJ {
+			sNum = m[i][bakJ+1 : j]
+		} else {
+			sNum = m[i][j+1 : bakJ]
+		}
+
+		j = bakJ
+
 		num, err := strconv.Atoi(sNum)
 		if err != nil {
 			panic(err)
@@ -44,19 +59,5 @@ func sumAdjascentTo(m []string, i, j int) int {
 
 		sum += num
 	}
-
-	dj = 1
-	for ; j+dj < len(m[i]) && unicode.IsDigit(rune(m[i][j+dj])); dj++ {
-	}
-
-	if dj != 1 {
-		sNum := m[i][j+1 : j+dj]
-		num, err := strconv.Atoi(sNum)
-		if err != nil {
-			panic(err)
-		}
-		sum += num
-	}
-
 	return sum
 }
