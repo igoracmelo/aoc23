@@ -35,10 +35,17 @@ func sumAdjascentTo(m []string, i, j int) int {
 	_ = bakI
 
 	djs := []int{-1, 1}
-	for _, dj := range djs {
-		for j = j + dj; j >= 0 && j < len(m[i]) && unicode.IsDigit(rune(m[i][j])); j += dj {
+	dis := []int{0, 0}
+
+	for k := range djs {
+		di := dis[k]
+		dj := djs[k]
+
+		found := false
+		for i, j = i+di, j+dj; i >= 0 && j >= 0 && i < len(m) && j < len(m[i]) && unicode.IsDigit(rune(m[i][j])); j += dj {
+			found = true
 		}
-		if j == bakJ+dj {
+		if !found {
 			j = bakJ
 			continue
 		}
